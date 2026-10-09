@@ -1,0 +1,25 @@
+name: smoke
+on: [push, pull_request]
+jobs:
+  build-and-probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build image
+        run: docker build -t mcp-vuln-lab .
+      - name: Start easy-mcp
+        run: |
+          docker run -d --name t -e MODULE=easy_mcp:app -e PORT=8911 -p 127.0.0.1:8911:8911 mcp-vuln-lab
+          sleep 4
+      - name: MCP initialize handshake returns a session id
+        run: |
+          curl -s -i -X POST http://127.0.0.1:8911/mcp \
+            -H 'Content-Type: application/json' -H 'Accept: application/json, text/event-stream' \
+            -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{}}}' \
+            | grep -i 'mcp-session-id'
+      - name: Path-traversal oracle returns /etc/passwd
+        run: |
+          curl -s -X POST http://127.0.0.1:8911/mcp \
+            -H 'Content-Type: application/json' -H 'Accept: application/json' \
+            -d '{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"read_file","arguments":{"path":"/etc/passwd"}}}' \
+            | grep -q 'root:x:0:0'

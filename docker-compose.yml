@@ -1,0 +1,39 @@
+# mcp-vuln-lab — six isolated targets on a private bridge network.
+# No host volumes are mounted; ports are published to 127.0.0.1 only so nothing is
+# exposed beyond this machine. Containers may egress to the internet: that is required
+# for out-of-band SSRF/exfil confirmation via Burp Collaborator.
+services:
+  easy-mcp:
+    build: .
+    environment: { MODULE: easy_mcp:app, PORT: "8911" }
+    ports: ["127.0.0.1:8911:8911"]
+    networks: [mcplab]
+  easy-chat:
+    build: .
+    environment: { MODULE: easy_chat:app, PORT: "8912" }
+    ports: ["127.0.0.1:8912:8912"]
+    networks: [mcplab]
+  medium-mcp:
+    build: .
+    environment: { MODULE: medium_mcp:app, PORT: "8921" }
+    ports: ["127.0.0.1:8921:8921"]
+    networks: [mcplab]
+  medium-agent:
+    build: .
+    environment: { MODULE: medium_agent:app, PORT: "8922" }
+    ports: ["127.0.0.1:8922:8922"]
+    networks: [mcplab]
+  hard-mcp:
+    build: .
+    environment: { MODULE: hard_mcp:app, PORT: "8931" }
+    ports: ["127.0.0.1:8931:8931"]
+    networks: [mcplab]
+  hard-agent:
+    build: .
+    environment: { MODULE: hard_agent:app, PORT: "8932" }
+    ports: ["127.0.0.1:8932:8932"]
+    networks: [mcplab]
+
+networks:
+  mcplab:
+    driver: bridge
