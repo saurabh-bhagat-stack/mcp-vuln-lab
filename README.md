@@ -6,7 +6,7 @@ vulnerable behaviour — genuine file reads, shell exec, outbound SSRF, un-scope
 secrets, poisoned tool output — so your scanner confirms on true signals, not on planted markers.
 
 Six targets across three difficulty tiers (**easy / medium / hard**) reproduce 50+ scenarios drawn from
-real-world CVEs and public research. The **hard** tier even includes *negative controls* (rate-limiting
+real-world CVEs and public research. The **hard** tier also includes *negative controls* (rate-limiting
 enforced, CORS locked down) so you can check your tooling does **not** false-positive.
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
