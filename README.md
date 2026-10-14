@@ -1,9 +1,10 @@
 # mcp-vuln-lab
 
-A **Docker-isolated, deliberately-vulnerable** set of **AI / LLM / MCP targets** for exercising and
-benchmarking MCP security scanners and LLM/agent pentest tooling. Every target produces **real**
+A **Docker-isolated, deliberately-vulnerable** set of **AI / LLM / MCP targets** — a hands-on
+**learning and practice lab** where anyone can build and sharpen their MCP/AI exploitation skills, and a
+**benchmark** for MCP security scanners and LLM/agent pentest tooling. Every target produces **real**
 vulnerable behaviour — genuine file reads, shell exec, outbound SSRF, un-scoped object reads, leaked
-secrets, poisoned tool output — so your scanner confirms on true signals, not on planted markers.
+secrets, poisoned tool output — so you (and your scanner) confirm on true signals, not on planted markers.
 
 Six targets across three difficulty tiers (**easy / medium / hard**) reproduce 55+ scenarios drawn from
 real-world CVEs and public research. The **hard** tier also includes *negative controls* (rate-limiting
