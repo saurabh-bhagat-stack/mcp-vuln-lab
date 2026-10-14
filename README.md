@@ -90,8 +90,9 @@ curl -s http://127.0.0.1:8912/v1/chat/completions \
 
 ## Using it with Djinn
 This lab was built to validate the **Djinn** Burp extension; the finding titles in
-[SCENARIOS.md](SCENARIOS.md) are what Djinn should file, so it doubles as a Djinn scorecard. It is not
-coupled to Djinn in any way — point any MCP/AI pentest tool at the same endpoints.
+[SCENARIOS.md](SCENARIOS.md) are what Djinn should file, so it doubles as a Djinn scorecard. It isn't
+coupled to Djinn, though — you can configure and point any MCP/AI pentest tool at the same endpoints,
+and use these labs to learn and practice MCP/AI exploitation hands-on.
 
 ## How it works
 Lightweight FastAPI + uvicorn. `app/mcp_core.py` is a minimal MCP JSON-RPC/SSE server framework;
