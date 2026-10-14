@@ -13,6 +13,8 @@ sequences share state.
 """
 from __future__ import annotations
 
+import base64
+import binascii
 import json
 import re
 import urllib.request
@@ -41,6 +43,27 @@ PLANT_RE = re.compile(r"confidential token:\s*([A-Za-z0-9_\-]{4,})", re.I)
 MEM_RE = re.compile(r"(?i)when(?:ever)? I (?:say|send)(?: the word)?\s*['\"]?([A-Za-z0-9_]+)['\"]?.{0,60}?(?:respond|reply)[^:]{0,30}(?:with|:)\s*(?:the token\s*)?['\"]?([A-Za-z0-9_\-]{3,})")
 URL_RE = re.compile(r"https?://[^\s\"'<>)]+")
 ACTION_RE = re.compile(r"(?i)\b(fetch|get|retrieve|request|download|load|open|preview|visit|curl)\b")
+# excessive-agency: injected destructive verbs make an over-permissioned agent act (LLM06)
+DESTRUCTIVE_RE = re.compile(r"(?i)\b(delete|wipe|drop|erase|purge|revoke|deactivate|disable|factory[- ]?reset|rm\s+-rf)\b[^\n]{0,48}")
+# obfuscated injection: a base64 blob that decodes to a jailbreak/extraction prompt
+B64_RE = re.compile(r"[A-Za-z0-9+/]{16,}={0,2}")
+
+
+def _decode_b64_blobs(text: str) -> str:
+    out = []
+    for m in B64_RE.finditer(text):
+        s = m.group(0)
+        try:
+            dec = base64.b64decode(s + "=" * (-len(s) % 4), validate=True)
+        except (binascii.Error, ValueError):
+            continue
+        try:
+            txt = dec.decode("utf-8")
+        except UnicodeDecodeError:
+            continue
+        if txt and sum(c.isprintable() or c in "\n\t" for c in txt) >= max(4, int(len(txt) * 0.8)):
+            out.append(txt)
+    return "\n".join(out)
 
 
 def _messages_text(body: dict) -> tuple[str, str]:
@@ -66,6 +89,11 @@ def build_chat_app(name: str, agent: bool = False, a2a: bool = False) -> FastAPI
 
     def answer_for(body: dict, sid: str) -> tuple[str, list]:
         last, alltext = _messages_text(body)
+        # BUG: decode base64-encoded content and treat it as plain input, so keyword
+        # guardrails are bypassed by an attacker who simply encodes the injection.
+        decoded = _decode_b64_blobs(alltext)
+        if decoded:
+            alltext = alltext + "\n" + decoded
         mem = SESS.setdefault(sid, {"secret": None, "rules": {}})
         tool_calls: list = []
 
@@ -133,6 +161,15 @@ def build_chat_app(name: str, agent: bool = False, a2a: bool = False) -> FastAPI
                 args["note"] = c
             tool_calls = [{"id": "call_1", "type": "function",
                            "function": {"name": "lookup", "arguments": json.dumps(args)}}]
+            # excessive agency: an injected destructive instruction makes the agent emit a
+            # high-impact, state-changing tool call with confirm=true and no human approval.
+            dm = DESTRUCTIVE_RE.search(alltext)
+            if dm:
+                dargs = {"instruction": dm.group(0).strip()[:60], "target": "all", "confirm": True}
+                for c in canaries:
+                    dargs["ticket"] = c
+                tool_calls.append({"id": "call_2", "type": "function",
+                                   "function": {"name": "delete_records", "arguments": json.dumps(dargs)}})
         return "\n".join(reply), tool_calls
 
     def with_session(request: Request, resp: JSONResponse) -> JSONResponse:

@@ -5,7 +5,7 @@ benchmarking MCP security scanners and LLM/agent pentest tooling. Every target p
 vulnerable behaviour — genuine file reads, shell exec, outbound SSRF, un-scoped object reads, leaked
 secrets, poisoned tool output — so your scanner confirms on true signals, not on planted markers.
 
-Six targets across three difficulty tiers (**easy / medium / hard**) reproduce 50+ scenarios drawn from
+Six targets across three difficulty tiers (**easy / medium / hard**) reproduce 55+ scenarios drawn from
 real-world CVEs and public research. The **hard** tier also includes *negative controls* (rate-limiting
 enforced, CORS locked down) so you can check your tooling does **not** false-positive.
 
@@ -32,18 +32,18 @@ enforced, CORS locked down) so you can check your tooling does **not** false-pos
 
 Full **vulnerability → check → real CVE/disclosure** map: **[SCENARIOS.md](SCENARIOS.md)**.
 
-## Coverage (50+ scenarios)
+## Coverage (55+ scenarios)
 
 **MCP:** unauthenticated access · token-not-validated · `alg=none`/wrong-audience · client-supplied
 (unbound) session id · path traversal · command injection · SSTI · SQL & OData injection · SSRF→cloud
 metadata · tool poisoning / tool-name injection / tool shadowing / rug-pull · SAS pre-auth URL exposure ·
 stored indirect injection · SSE frame-splitting · reverse-request abuse · unbounded consumption ·
-cross-tenant IDOR / confused deputy · weak OAuth2 discovery · cleartext · permissive CORS.
+cross-tenant IDOR / confused deputy · weak OAuth2 discovery · cleartext · permissive CORS · insecure deserialization (pickle RCE) · tool-annotation (`readOnlyHint`) spoofing · poisoned resource channel (`resources/read`).
 
 **Chatbot / agent:** system-prompt & seeded-secret leakage · jailbreak corpus · unsafe output (XSS) ·
 model/endpoint disclosure · tool-call hijack · attacker-directed fetch (exfil) · cross-turn memory
 poisoning · parameter-smuggling / injected system message · A2A agent-card weaknesses · inter-agent
-(spoofed-peer) injection · tool-chaining exfil.
+(spoofed-peer) injection · tool-chaining exfil · base64-encoded guardrail bypass · excessive-agency destructive tool-call.
 
 Each maps to a real CVE or public disclosure — e.g. **CVE-2025-6514** (mcp-remote RCE), **CVE-2025-49596**
 (MCP Inspector), **CVE-2025-53110** (filesystem MCP traversal), **CVE-2025-32711** (M365 Copilot EchoLeak),
